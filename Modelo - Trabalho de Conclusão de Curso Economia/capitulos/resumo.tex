@@ -1,0 +1,42 @@
+% ------------------------------------------------------------------
+% RESUMO E ABSTRACT
+%
+% Para iniciarmos um ambiente, seja de resumo, abstract ou outro 
+% qualquer, devemos começar pelo \begin. Onde eu escrevo nesse 
+% arquivo, já me encontro dentro de um ``ambiente de resumo''.
+%
+% Aqui, apresentarei o resumo e mais um outro comando de exemplo: o 
+% \lipsum. A principal função do \lipsum é gerar textos aleatórios -
+% textos dummys. Assim, por mais que no presente documento - 
+% no arquivo .TeX - os \lipsum[3-5] ou \lipsum[2-4] apareçam, no 
+% .pdf esses só aparecerão como textos aleatórios.
+% ------------------------------------------------------------------
+
+%\setlength{\absparsep}{18pt} % ajusta o espaçamento dos parágrafos do resumo
+\begin{resumo}
+
+
+	%-------------------------------------%
+	%       AQUI ESCREVEMOS O TEXTO       %
+	%-------------------------------------%
+	
+
+\lipsum[3-4] % GERAMOS UM TEXTO DUMMY
+
+\textbf{Palavras-chave}: Latex; Abntex; Lipsum; Economia. % Palavra-chave inicia-se com maiúscula
+\end{resumo}
+
+% ------------------------------------------------------------------
+% No caso do abstract, faremos a mesma coisa. Só adicionaremos a 
+% opção abstract como o argumento do comando.
+%-------------------------------------------------------------------
+
+\begin{resumo}[ABSTRACT] % ESCREVER EM LETRAS MAIÚSCULAS
+	
+\lipsum[2-3] % Novamente o lipsum...
+
+\textbf{Keywords}: Latex; Abntex; Lipsum; Economics. 	
+\end{resumo}
+
+
+

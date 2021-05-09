@@ -1,0 +1,108 @@
+%------------------------------------------------------------------------------
+% Exemplo de documento para auxiliar a padronização das monografias da 
+% Faculdade de Economia - UFF
+%------------------------------------------------------------------------------
+
+\documentclass[12pt, openright, chapter=TITLE]{economia} %---------------------
+% Estão disponíveis opções de impressão como frente e verso, papel A4, outras
+% linguagens e ets...
+%------------------------------------------------------------------------------ 
+
+%\usepackage{helvet}
+%\renewcommand{\familydefault}{\sfdefault} % desmarcar as duas linhas de código para usar Arial como fonte...
+
+\usepackage{pdfpages}
+
+%------------------------------------------------------------------------------
+% INFORMAÇÕES E DADOS PARA A CAPA
+%------------------------------------------------------------------------------
+
+\titulo{Aqui escrevemos o nome do Título: Modelo de Monografia em LaTeX  para a Faculdade de Economia UFF Niterói}
+\autor{Gustavo de Oliveira Vital}
+\data{2019} 
+\orientador{Prof. Dr. Jesus Alexei Luizar Obregon}
+\coorientador{Prof. Dr$^{a}$. Danielle Carusi Machado}
+
+
+%------------------------------------------------------------------------------
+%	FOLHA DE ROSTO E PREAMBULO
+%------------------------------------------------------------------------------
+
+\preambulo{Monografia apresentada ao curso de Bacharelado em Ciências Econômicas da Universidade Federal Fluminense como requisito parcial para conclusão do curso.}
+
+%------------------------------------------------------------------------------
+% INÍCIO DO DOCUMENTO
+%------------------------------------------------------------------------------
+
+\makeindex
+
+\begin{document}
+
+%------------------------------------------------------------------------------
+% ELEMENTOS PRÉ-TEXTUAIS E CAPA
+%------------------------------------------------------------------------------
+
+%------------------------------------------------------------------------------
+% Aqui iremos inserir, em ordem, a capa '\imprimircapa', a folha de rosto
+% '\imprimirfolhaderosto*', as figuras da monografia '\figuras' e as tabelas
+% 'tabelas'. É possível também a inserção de quadros, por exemplo, com o 
+% comando 'quadros'. Sempre pulando uma linha entre as opções de ''listas''
+%------------------------------------------------------------------------------
+
+\imprimircapa 						
+\imprimirfolhaderosto*	  					
+
+\includepdf[pages=1]{file.pdf} % inclui o arquivo file (ficha catalografica gerada pela biblioteca)
+\include{aprovacao}	
+\clearpage
+
+\input{capitulos/resumo.tex}	
+
+\input{capitulos/dedicatoria}		
+					
+\figuras
+
+\tabelas
+
+\sumario
+
+
+% -----------------------------------------------------------------------------
+% ELEMENTOS TEXTUAIS
+% -----------------------------------------------------------------------------
+
+\textual
+
+
+
+\input{capitulos/introducao.tex}
+
+\input{capitulos/capitulo2.tex}
+
+\input{capitulos/capitulo3.tex}
+
+\input{capitulos/comocitar.tex}
+
+\input{capitulos/conclusao.tex}
+
+
+
+
+% ----------------------------------------------------------
+% ELEMENTOS PÓS-TEXTUAIS
+% ----------------------------------------------------------
+\postextual
+
+% ----------------------------------------------------------
+% Referências bibliográficas
+% ----------------------------------------------------------
+
+\nocite{hobsbawm1995era,
+		battista2000reduction,
+		abntexmanual, 
+		abntex2modelo} % aqui citamos os autores que não foram citados no texto.
+
+\bibliography{referencias}
+
+
+\end{document}
