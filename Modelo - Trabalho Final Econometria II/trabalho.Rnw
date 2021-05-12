@@ -1,0 +1,210 @@
+\documentclass[twosides]{trabalho}
+\usepackage[utf8]{inputenc}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Inserir o comando \numero, \title, \author
+% e \date
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\title{Modelo de Trabalho para a Cadeira de Econometria I - Uma Análise Salarial Simples do Estado do Acre, Utilizando Dados da PNAD Contínua do ano de 2017.}
+\author{Gustavo de Oliveira}
+\date{\today}
+\numero{1}
+
+\begin{document}
+\cabecalho
+
+\noindent
+O presente trabalho visa exemplificar um modelo de trabalho para a cadeira de Econometria I. Este foi feito, essencialmente, utilizando a linguagem \LaTeX e a linguagem R, por meio da interface do pacote \textit{knitr}. Todos os códigos de \textit{chunks}, bem como a classe do trabalho ou o documento \TeX estarão disponibilizados para uso. Além disso, ressalta-se que a base de dados utilizada para o trabalho também estará disponível. O objetivo é a possibilidade de replicação deste documento por quaisquer interessados.   
+
+\section{A Parte Prática}
+
+O corte inicial foi referente ao estado do Acre, por meio dos dados da PNADC. Isso é, temos em mãos, inicialmente, um dataframe com 9287 observações. Além disso, vale ressaltar que o dataframe que temos já foi modificado: temos \textit{17} variáveis. A primeira coisa que temos que fazer é ler os dados.
+
+\subsection{Preparação dos Dados}
+
+Primeiro, definiremos nosso diretório de trabalho (a pasta onde iremos trabalhar). Feito isso, só nos resta ler o arquivo que desejarmos - nesse caso o \textbf{pnadc\_anual\_ac\_2017.csv}
+
+<<wd, highlight=FALSE>>=
+
+setwd('/home/gustavo/Documents/EconometriaI/')
+pnadc_2017 <- read.csv('pnadc_anual_ac_2017.csv')
+@
+
+O dataframe pnad\_2017 é composto de inúmeras variáveis que podemos trabalhar. Vamos, entretanto, restringir nosso dataframe mais uma vez. Afim de obtermos uma maior homogeneidade nos nossos dados, trabalharemos com aquelas observações que correspondem à posição = 4. Isso é, empregados do setor público (inclusive às empresas de economia mista). Chamaremos nosso novo dataframe de ``data''.  
+
+<<subset, highlight=FALSE>>=
+data <- subset(pnadc_2017, posicao == 4)
+@
+
+Assim, restringimos nosso dataframe a 626 observações, ainda com 17 variáveis. Podemos, agora, criar e manipular as variaveis.
+
+\subsection{Manipulação e Criação de Variáveis}
+
+A primeira coisa que faremos é criar algumas dummys. A primeira será seferente ao sexo. No nosso dataframe, sexo = 1 é homem, assim, seguiremos a mesma lógica. Utilizaremos uma estrutura de repetição e uma de controle para o fazermos. Caso, sexo = 1, a observação ``será homem''; caso contrário (0), será mulher. Chamaremos nossa nova variável de genero.
+
+<<genero, highlight=FALSE>>=
+genero <- c() # criamos um vetor vazio para genero.
+for(i in 1:nrow(data)){ # se for homem, genero[i] = 1, 
+                        # c.c genero[i] = 0
+  if(data$sexo[i] == 1){ 
+    genero[i] <- 1
+  } else{
+    genero[i] <- 0
+  }
+}
+@
+
+Como esperado, essa variável terá o mesmo comprimento do nosso dataframe, 626 observações. Achamos prudente criar uma outra dummy. referente a cor do indivíduo. Nossa nova variável será ``branco''. Se a ``observação for branca'' essa será 1, 0 c.c:
+
+<<branco, highlight=FALSE>>=
+branco <- c() # criamos um vetor vazio para genero.
+for(i in 1:nrow(data)){ # se for branco, branco[i] = 1, 
+                        # c.c branco[i] = 0
+  if(data$cor_raca[i] == 1){
+    branco[i] <- 1
+  } else{
+    branco[i] <- 0
+  }
+}
+@
+
+Vamos, então, criar um novo dataframe - o que utilizaremos evetivamente para as estimações e estatísticas. Chamaremos esse novo dataframe de data2017
+
+<<data2017, highlight = FALSE>>=
+data2017 <- data.frame(
+  data$idade,
+  data$anos_estudo,
+  data$rendimento_mensal,
+  branco, 
+  genero
+)
+@
+
+Afim de melhor organizar nossos dados, vamos renomear as variáveis:
+
+<<names2017, highlight = FALSE>>=
+names(data2017) <-
+  c('idade', 'estudo', 'salmes', 'branco', 'genero')
+@
+
+Podemos agora, trabalhar melhor com as variáveis.
+
+\subsection{Estatísticas descritivas e Gráficos}
+
+Agora que temos nosso dataframe de trabalho, vamos melhor verificar as variáveis afim de, se possível, tratarmos de linearidades ou outros vatores que poderiam prejudicar ou inviabilizar nosso modelo futuro.
+
+A primeira coisa que devemos fazer é uma análise descritiva das variáveis. para uma melhor visualização, utilizaremos o pacote \textit{xtable} do R, presente no CRAN. Esse pacote exporta as tabelas já em formato \LaTeX para o nosso documento.
+
+\subsubsection{Estatísticas Descritivas}
+
+Vamos melhor entender nossas variáveis, então:
+
+<<estdis, highlight = FALSE, results='asis'>>=
+library(xtable)
+print(xtable(summary(data2017), 
+             caption = 'Estatísticas Descritivas de data2017'), 
+      include.rownames=FALSE, caption.placement = 'top')
+@
+
+Podemos perceber, por exemplo, com a tabela de estatísticas descritivas, que homens representam cerca de 42,81\% da amostra. Da mesma forma, percebemos que cerca de 23,32\% da amostra é branca. 
+
+\subsubsection{Análise Gráfica}
+
+Vamos agora, realizar uma análise gráfica afim de identificar, por exemplo, alguma anomalia no nosso conjunto de dados - um outlier por exemplo. Não o faremos para as dummys
+
+<<plot1, highlight = FALSE, fig.width='\\textwidth', fig.height=2.5, fig.cap='Histogramas das Variáveis idade, estudo e salmes', fig.pos='h!'>>=
+par(mfrow = c(1,3))
+for(i in 1:3){ 
+  hist(data2017[, i], xlab = names(data2017)[i], 
+       main = NULL, probability = TRUE)
+}
+@
+
+Caso os histogramas não nos indique com exatidão uma possível inferência sobre nossos dados, podemos verificar a presença de possíveis outliers por meio dos boxplots.
+
+<<plot2, highlight = FALSE, fig.width='\\textwidth', fig.height=2.5, fig.cap='Boxplot das Variáveis idade, estudo e salmes', fig.pos='h!'>>=
+par(mfrow = c(1,3))
+for(i in 1:3){ 
+  boxplot(data2017[, i], xlab = names(data2017)[i], 
+       main = NULL)
+}
+@
+
+Afim de melhorarmos nosso modelo, vamos realizar uma transformação linear na variável \textbf{salmes}. Assim, aplicaremos o log sobre essa e incluiremos no nosso data2017. Para isso, basta aplicarmos a função log() - chamaremos essa nova variável de lnsalmes:
+
+<<lnsalmes, highlight = FALSE>>=
+data2017$lnsalmes <- log(data2017$salmes)
+@
+
+E temos os gráficos a seguir:
+
+<<plot3, highlight = FALSE, fig.width='\\textwidth', fig.height=3, fig.cap='Boxplot da Variável lnsalmes', fig.pos='h!'>>=
+par(mfrow = c(1, 2))
+boxplot(data2017$lnsalmes, xlab = 'lnsalmes')
+hist(data2017$lnsalmes, xlab = 'lnsalmes', main = NULL)
+@
+
+\subsection{Estimando nosso Modelo}
+
+Agora que já fizemos uma análise descritiva das nossas variáveis, vamos rodar a nossa primeira regressão. Esta terá a seguinte forma teórica:
+
+$$lnsalmes = \beta_0 + \beta_1 genero + \beta_2 idade + \beta_4 estudo + \beta_5 branco + u $$
+
+Vale lembrar que temos que levar em consideração os missings values, utilizaremos o na.action. Assim, estimamos nosso modelo, fazendo referência ao dataframe data2017:
+
+<<modelo20171, highlight=FALSE>>=
+modelo2017 <- lm(lnsalmes ~ genero + idade + estudo + 
+                   branco, na.action = na.omit, data = data2017)
+@
+
+Vamos visualizar a tabela de coeficientes utilizando o pacote stargazer. Este nos permite uma saida elegante para as regressões:
+
+<<stargazer1, highlight=FALSE, warning=FALSE, message=FALSE, results='asis'>>=
+library(stargazer)
+stargazer(modelo2017, title = 'Primeiro Modelo Estimado')
+@
+
+Alternativamente podemos criar um modelo que considere idade ao quadrado como variável explicativa:
+
+$$lnsalmes = \beta_0 + \beta_1 genero + \beta_2 idade + \beta_3 idade^2 + \beta_4 estudo + \beta_5 branco + u $$
+
+Para criarmos $idade^2$ na nossa regressão, basta utilizarmos o operador $I$, na ``formula''.
+
+<<modelo20172, highlight=FALSE>>=
+modelo2017.2 <- lm(lnsalmes ~ genero + idade + I(idade^2) + estudo + 
+                   branco, na.action = na.omit, data = data2017)
+@
+
+Comparando os modelos:
+
+<<stargazer2, highlight=FALSE, warning=FALSE, message=FALSE, results='asis'>>=
+stargazer(modelo2017, modelo2017.2, title = 'Comparando os Modelos')
+@
+
+\subsubsection{Análise de Resíduos}
+
+Utilizaremos o modelo ``modelo2017.2'' por compreendermos que $idade^2$ é teoricamente relevante para o modelo, seja pela sua significância individual ou conjunta.
+Extrairemos os resíduos do modelo 2 e chamaremos de ``residuos'': 
+
+<<resid, highlight=FALSE>>=
+residuos <- resid(modelo2017.2)
+@
+
+Uma primeira análise gráfica é apresentada abaixo:
+
+<<plotresid, highlight = FALSE, fig.width='\\textwidth', fig.height=3, fig.cap='Resíduos do modelo 2', fig.pos='h!'>>=
+par(mfrow = c(1,1))
+plot(residuos, type = 'l')
+abline(h=0, col = 'red', lty = 2)
+@
+Podemos ter uma visão mais geral dos gráficos relacionados ao modelo com o próprio comando plot. Este nos dará informações sobre leverages ou mesmo o qqplot:
+<<plotmodelo, highlight = FALSE, fig.width='\\textwidth', fig.height=4, fig.cap='Resíduos do modelo 2', fig.pos='h!'>>=
+par(mfrow = c(2,2))
+plot(modelo2017.2)
+@
+
+\nocite{martine2015pnad}
+
+\bibliography{refs}
+\end{document}
